@@ -1,4 +1,8 @@
-require('dotenv').config();
+const dotenv = require('dotenv');
+const dotenvExpand = require('dotenv-expand')
+dotenv.config();
+dotenvExpand(dotenv.config({ path: './prisma/.env' }));
+
 import * as _ from 'lodash';
 
 let logs: Array<string> | null = [];
@@ -56,8 +60,6 @@ const configurations = {
         user: readStringValue('DB_USER', 'postgres'),
         password: readStringValue('DB_PASSWORD', 'password'),
         port: readStringValue('DB_PORT', 'port'),
-        // This is being calculated so deferring for now to have default logic run
-        databaseURL: 'REDERLY_CONFIG_NOT_SET',
     },
     loadPromise: new Promise<void>((resolve, reject) => {
         // Avoid cyclic dependency by deferring the logging until after all the imports are done
@@ -87,12 +89,5 @@ const configurations = {
         });
     })
 };
-
-if(_.isNil(process.env.DB_URL)) {
-    configurations.db.databaseURL = `postgresql://${configurations.db.user}:${configurations.db.password}@${configurations.db.host}:${configurations.db.port}/${configurations.db.name}?schema=public`
-    process.env.DB_URL = configurations.db.databaseURL;
-} else {
-    logs?.push('DB_URL explicitly set, ignoring individual db configurations (like host and name)');
-}
 
 export default configurations;

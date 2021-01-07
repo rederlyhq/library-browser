@@ -6,4 +6,5 @@ const prisma = new PrismaClient();
     console.log(`hello ${process.env.DB_URL}`);
     const result = await prisma.opl_author.findMany();
     console.log(JSON.stringify(result, null, 2));
+    prisma.$disconnect();
 })();
