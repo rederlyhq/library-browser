@@ -8,12 +8,11 @@ datasource db {
 }
 
 model opl_author {
-  author_id      Int     @id @default(autoincrement())
-  // This type is currently not supported.
-  // institution bytea?
-  lastname       String
-  firstname      String
-  email          String?
+  author_id   Int     @id @default(autoincrement())
+  institution String?
+  lastname    String
+  firstname   String
+  email       String?
 
   @@unique([lastname, firstname], name: "author")
 }
@@ -83,8 +82,7 @@ model opl_pgfile {
   pgfile_id          Int                  @id @default(autoincrement())
   dbsection_id       Int                  @default(0)
   author_id          Int?
-  // This type is currently not supported.
-  // institution     bytea?
+  institution        String?
   path_id            Int                  @default(0)
   filename           String
   morelt_id          Int                  @default(0)
