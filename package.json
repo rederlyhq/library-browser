@@ -29,5 +29,9 @@
       "ts": "node --require ts-node/register"
     },
     "signal": "SIGINT"
+  },
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "lodash": "^4.17.20"
   }
 }
