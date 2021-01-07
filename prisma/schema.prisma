@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+model opl_author {
+  author_id      Int     @id @default(autoincrement())
+  // This type is currently not supported.
+  // institution bytea?
+  lastname       String
+  firstname      String
+  email          String?
+
+  @@unique([lastname, firstname], name: "author")
+}
+
+model opl_chapter {
+  chapter_id   Int           @id @default(autoincrement())
+  textbook_id  Int?          @default(0)
+  number       Int?
+  name         String
+  page         Int?
+  opl_textbook opl_textbook? @relation(fields: [textbook_id], references: [textbook_id])
+  opl_section  opl_section[]
+
+  @@unique([textbook_id, number, name], name: "textbook_chapternumber_chaptername")
+}
+
+model opl_dbchapter {
+  dbchapter_id  Int             @id @default(autoincrement())
+  name          String
+  dbsubject_id  Int             @default(0)
+  opl_dbsubject opl_dbsubject   @relation(fields: [dbsubject_id], references: [dbsubject_id])
+  opl_dbsection opl_dbsection[]
+
+  @@unique([name, dbsubject_id], name: "subject_chapter_name")
+}
+
+model opl_dbsection {
+  dbsection_id  Int           @id @default(autoincrement())
+  name          String
+  dbchapter_id  Int           @default(0)
+  opl_dbchapter opl_dbchapter @relation(fields: [dbchapter_id], references: [dbchapter_id])
+  opl_morelt    opl_morelt[]
+  opl_pgfile    opl_pgfile[]
+
+  @@unique([name, dbchapter_id], name: "chapter_section_name")
+}
+
+model opl_dbsubject {
+  dbsubject_id  Int             @id @default(autoincrement())
+  name          String          @unique
+  opl_dbchapter opl_dbchapter[]
+}
+
+model opl_keyword {
+  keyword_id         Int                  @id @default(autoincrement())
+  keyword            String               @unique
+  opl_pgfile_keyword opl_pgfile_keyword[]
+}
+
+model opl_morelt {
+  morelt_id     Int           @id @default(autoincrement())
+  name          String        @unique
+  dbsection_id  Int           @default(0)
+  leader        Int?
+  opl_dbsection opl_dbsection @relation(fields: [dbsection_id], references: [dbsection_id])
+}
+
+model opl_path {
+  path_id    Int          @id @default(autoincrement())
+  path       String       @unique
+  machine    String?
+  path_user  String?
+  opl_pgfile opl_pgfile[]
+}
+
+model opl_pgfile {
+  pgfile_id          Int                  @id @default(autoincrement())
+  dbsection_id       Int                  @default(0)
+  author_id          Int?
+  // This type is currently not supported.
+  // institution     bytea?
+  path_id            Int                  @default(0)
+  filename           String
+  morelt_id          Int                  @default(0)
+  level              Int?
+  language           String?
+  static             Int?
+  mo                 Int?
+  opl_dbsection      opl_dbsection        @relation(fields: [dbsection_id], references: [dbsection_id])
+  opl_path           opl_path             @relation(fields: [path_id], references: [path_id])
+  opl_pgfile_keyword opl_pgfile_keyword[]
+  opl_pgfile_problem opl_pgfile_problem[]
+}
+
+model opl_pgfile_keyword {
+  pgfile_id   Int         @default(0)
+  keyword_id  Int         @default(0)
+  opl_keyword opl_keyword @relation(fields: [keyword_id], references: [keyword_id])
+  opl_pgfile  opl_pgfile  @relation(fields: [pgfile_id], references: [pgfile_id])
+
+  @@unique([keyword_id, pgfile_id], name: "pgfile_keyword")
+}
+
+model opl_pgfile_problem {
+  pgfile_id   Int         @default(0)
+  problem_id  Int         @default(0)
+  opl_pgfile  opl_pgfile  @relation(fields: [pgfile_id], references: [pgfile_id])
+  opl_problem opl_problem @relation(fields: [problem_id], references: [problem_id])
+
+  @@id([pgfile_id, problem_id])
+}
+
+model opl_problem {
+  problem_id         Int                  @id @default(autoincrement())
+  section_id         Int                  @default(0)
+  number             Int
+  page               Int?
+  opl_section        opl_section          @relation(fields: [section_id], references: [section_id])
+  opl_pgfile_problem opl_pgfile_problem[]
+}
+
+model opl_section {
+  section_id  Int           @id @default(autoincrement())
+  chapter_id  Int           @default(0)
+  number      Int?
+  name        String
+  page        Int?
+  opl_chapter opl_chapter   @relation(fields: [chapter_id], references: [chapter_id])
+  opl_problem opl_problem[]
+
+  @@unique([chapter_id, number, name], name: "chapter_sectionnumber_sectionname")
+}
+
+model opl_textbook {
+  textbook_id Int           @id @default(autoincrement())
+  title       String
+  edition     Int           @default(0)
+  author      String
+  publisher   String?
+  isbn        String?
+  pubdate     String?
+  opl_chapter opl_chapter[]
+}
