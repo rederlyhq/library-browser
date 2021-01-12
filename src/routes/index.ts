@@ -6,7 +6,7 @@ import { PrismaClient } from "@prisma/client"
 import _ = require('lodash');
 import logger from '../utilities/logger';
 const prisma = new PrismaClient({
-    log: ['query', 'warn', 'error']
+    // log: ['query', 'warn', 'error']
 });
 
 const getQueryParamArray = (value: string | string[] | undefined): Array<string> => {
@@ -85,11 +85,11 @@ router.get('/search', async (req, _res, next) => {
     const includeChapter = includeSubject || doesExists(chapterId);
     const includeSection = includeChapter || doesExists(sectionId);
 
-    console.log(JSON.stringify({
+    logger.debug(`Params: ${JSON.stringify({
         subjectId,
         chapterId,
         sectionId,
-    }, null, 2))
+    })}`)
 
     try {
         const result = await prisma.opl_path.findMany({
@@ -116,11 +116,11 @@ router.get('/search', async (req, _res, next) => {
                 path_id: 'asc'
             }
         });
-        logger.debug({
+        logger.debug(`Includes: ${JSON.stringify({
             includeSubject,
             includeChapter,
             includeSection,
-        })
+        })}`)
         logger.debug(`Search count: ${result.length}`);
 
         next(httpResponse.Ok(null, {

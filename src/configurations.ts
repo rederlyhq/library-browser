@@ -1,9 +1,9 @@
 const dotenv = require('dotenv');
 const dotenvExpand = require('dotenv-expand')
+import * as _ from 'lodash';
 dotenv.config();
 dotenvExpand(dotenv.config({ path: './prisma/.env' }));
-
-import * as _ from 'lodash';
+import { LoggingLevelType, LOGGING_LEVEL } from './utilities/logger-logging-levels';
 
 let logs: Array<string> | null = [];
 const generateLog = (key: string, value: string | undefined, defaultValue: unknown): string => `Configuration for [${key}] not recognized with value [${value}] using default value [${defaultValue}]`;
@@ -67,6 +67,42 @@ function readIntValue(key: string, defaultValue?: number | null | undefined): nu
     return value;
 };
 
+// Developer check, would be cool to have a preprocessor strip this code out
+if (process.env.NODE_ENV !== 'production') {
+    Object.keys(LOGGING_LEVEL).forEach((loggingLevelKey: string) => {
+        if (loggingLevelKey !== loggingLevelKey.toUpperCase()) {
+            throw new Error('Logging levels constant should be all upper case');
+        }
+    });
+}
+
+const getLoggingLevel = (key: string, defaultValue: LoggingLevelType | null): LoggingLevelType | null => {
+    let rawValue = process.env[key];
+    // Not set
+    if (_.isUndefined(rawValue)) {
+        logs?.push(generateLog(key, rawValue, defaultValue));
+        return defaultValue;
+    }
+
+    // Explicit not set
+    if (rawValue === 'null') {
+        return null;
+    }
+
+    // upper case for case insensitive search (should be validation above to make sure all keys are uppercased)
+    rawValue = rawValue.toUpperCase();
+    if (Object.keys(LOGGING_LEVEL).indexOf(rawValue) < 0) {
+        logs?.push(generateLog(key, rawValue, defaultValue));
+        return defaultValue;
+    }
+
+    return LOGGING_LEVEL[rawValue as keyof typeof LOGGING_LEVEL];
+};
+
+const loggingLevel = getLoggingLevel('LOGGING_LEVEL', LOGGING_LEVEL.INFO);
+const loggingLevelForFile = getLoggingLevel('LOGGING_LEVEL_FOR_FILE', loggingLevel);
+const loggingLevelForConsole = getLoggingLevel('LOGGING_LEVEL_FOR_CONSOLE', loggingLevel);
+
 const nodeEnv = readStringValue('NODE_ENV', 'development');
 // needs to be read ahead of of time to be used in configurations
 const isProduction = nodeEnv === 'production';
@@ -97,6 +133,14 @@ const configurations = {
         user: readStringValue('DB_USER', 'postgres'),
         password: readStringValue('DB_PASSWORD', 'password'),
         port: readStringValue('DB_PORT', 'port'),
+    },
+    logging: {
+        loggingLevel,
+        loggingLevelForFile,
+        loggingLevelForConsole,
+        urlInMeta: readBooleanValue('LOGGING_URL_IN_META', false),
+        metaInLogs: readBooleanValue('LOGGING_META_IN_LOGS', false),
+        logJson: readBooleanValue('LOGGING_LOG_JSON', isProduction),
     },
     loadPromise: new Promise<void>((resolve, reject) => {
         // Avoid cyclic dependency by deferring the logging until after all the imports are done
