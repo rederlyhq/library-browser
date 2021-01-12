@@ -4,6 +4,7 @@ import httpResponse from '../utilities/http-response';
 const router = express.Router();
 import { PrismaClient } from "@prisma/client"
 import _ = require('lodash');
+import logger from '../utilities/logger';
 const prisma = new PrismaClient({
     log: ['query', 'warn', 'error']
 });
@@ -29,17 +30,25 @@ const doesExists = _.negate(_.isNil);
 router.get('/subjects', async (_req, _res, next) => {
     try {
         const subjects = await prisma.opl_dbsubject.findMany();
+        logger.debug(`Subject count: ${subjects.length}`);
         next(httpResponse.Ok(null, {
             subjects: subjects,
-        }));    
+        }));
     } catch (e) {
         next(e);
     }
 });
 
-router.get('/chapters', async (_req, _res, next) => {
+router.get('/chapters', async (req, _res, next) => {
+    const subjectId: number | undefined = getNumberArrayFromQuery(req.query.subjectId as string | string[] | undefined)[0];
+
     try {
-        const chapters = await prisma.opl_dbchapter.findMany();
+        const chapters = await prisma.opl_dbchapter.findMany({
+            where: {
+                dbsubject_id: subjectId
+            }
+        });
+        logger.debug(`Chapter count: ${chapters.length}`);
         next(httpResponse.Ok(null, {
             chapters: chapters,
         }));    
@@ -48,9 +57,16 @@ router.get('/chapters', async (_req, _res, next) => {
     }
 });
 
-router.get('/sections', async (_req, _res, next) => {
+router.get('/sections', async (req, _res, next) => {
+    const chapterId: number | undefined = getNumberArrayFromQuery(req.query.chapterId as string | string[] | undefined)[0];
+
     try {
-        const sections = await prisma.opl_dbsection.findMany();
+        const sections = await prisma.opl_dbsection.findMany({
+            where: {
+                dbchapter_id: chapterId
+            }
+        });
+        logger.debug(`Section count: ${sections.length}`);
         next(httpResponse.Ok(null, {
             sections: sections,
         }));    
