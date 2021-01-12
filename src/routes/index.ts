@@ -94,18 +94,12 @@ router.get('/search', async (req, _res, next) => {
     try {
         const result = await prisma.opl_path.findMany({
             select: {
+                path_id: true,
                 path: true,
-                opl_pgfile: {
-                    distinct: 'pgfile_id',
-                    select: {
-                        filename: true
-                    },
-                    
-                }
             },
             where: {
                 opl_pgfile: !includeSection ? undefined : {
-                    every: {
+                    some: {
                         opl_dbsection: !includeSection ? undefined : {
                             dbsection_id: sectionId,
                             opl_dbchapter: !includeChapter ? undefined: {
@@ -117,9 +111,17 @@ router.get('/search', async (req, _res, next) => {
                         }
                     }
                 }
+            },
+            orderBy: {
+                path_id: 'asc'
             }
         });
-        console.log(result.length);
+        logger.debug({
+            includeSubject,
+            includeChapter,
+            includeSection,
+        })
+        logger.debug(`Search count: ${result.length}`);
 
         next(httpResponse.Ok(null, {
             result: result,
