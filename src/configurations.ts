@@ -1,5 +1,5 @@
-const dotenv = require('dotenv');
-const dotenvExpand = require('dotenv-expand')
+import * as dotenv from 'dotenv';
+import * as dotenvExpand from 'dotenv-expand';
 import * as _ from 'lodash';
 dotenv.config();
 dotenvExpand(dotenv.config({ path: './prisma/.env' }));
@@ -29,7 +29,7 @@ function readBooleanValue(key: string, defaultValue?: boolean | null | undefined
         return defaultValue ?? null;
     }
     return value;
-};
+}
 
 function readStringValue(key: string, defaultValue: string): string;
 function readStringValue(key: string, defaultValue?: string | null | undefined): string | null;
@@ -41,7 +41,7 @@ function readStringValue(key: string, defaultValue?: string | null | undefined):
         return defaultValue ?? null;
     }
     return value;
-};
+}
 
 const fromIntValue = (value: string | undefined | null): number | null => {
     if (_.isNil(value)) {
@@ -65,7 +65,7 @@ function readIntValue(key: string, defaultValue?: number | null | undefined): nu
         return defaultValue ?? null;
     }
     return value;
-};
+}
 
 // Developer check, would be cool to have a preprocessor strip this code out
 if (process.env.NODE_ENV !== 'production') {

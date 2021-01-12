@@ -1,8 +1,7 @@
-import Boom = require('boom');
 import * as express from 'express';
 import httpResponse from '../utilities/http-response';
 const router = express.Router();
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient } from '@prisma/client';
 import _ = require('lodash');
 import logger from '../utilities/logger';
 const prisma = new PrismaClient({
@@ -18,7 +17,7 @@ const getQueryParamArray = (value: string | string[] | undefined): Array<string>
         return value;
     }
     return [value];
-}
+};
 
 const stringArrayToNumberArray= (value: string[]): number[] => value.map(arg => parseInt(arg, 10));
 const filterNaN = (arr: number[]) => _.filter(arr, _.negate(_.isNaN));
@@ -89,7 +88,7 @@ router.get('/search', async (req, _res, next) => {
         subjectId,
         chapterId,
         sectionId,
-    })}`)
+    })}`);
 
     try {
         const result = await prisma.opl_path.findMany({
@@ -120,7 +119,7 @@ router.get('/search', async (req, _res, next) => {
             includeSubject,
             includeChapter,
             includeSection,
-        })}`)
+        })}`);
         logger.debug(`Search count: ${result.length}`);
 
         next(httpResponse.Ok(null, {
