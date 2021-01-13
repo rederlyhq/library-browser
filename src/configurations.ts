@@ -115,7 +115,7 @@ const configurations = {
         failOnMissingConfigurations: readBooleanValue('FAIL_ON_MISSING_CONFIGURATIONS', isProduction),
     },
     server: {
-        port: readStringValue('SERVER_PORT', '3000'),
+        port: readStringValue('SERVER_PORT', '3004'),
         basePath: readStringValue('SERVER_BASE_PATH', '/library-browser'),
         logInvalidlyPrefixedRequests: readBooleanValue('SERVER_LOG_INVALIDLY_PREFIXED_REQUESTS', true),
         blockInvalidlyPrefixedRequests: readBooleanValue('SERVER_BLOCK_INVALIDLY_PREFIXED_REQUESTS', true),

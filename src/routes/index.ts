@@ -91,22 +91,22 @@ router.get('/search', async (req, _res, next) => {
     })}`);
 
     try {
-        const result = await prisma.opl_path.findMany({
+        const result = await prisma.opl_pgfile.findMany({
             select: {
-                path_id: true,
-                path: true,
+                filename: true,
+                opl_path: {
+                    select: {
+                        path: true
+                    }
+                }
             },
             where: {
-                opl_pgfile: !includeSection ? undefined : {
-                    some: {
-                        opl_dbsection: !includeSection ? undefined : {
-                            dbsection_id: sectionId,
-                            opl_dbchapter: !includeChapter ? undefined: {
-                                dbchapter_id: chapterId,
-                                opl_dbsubject: !includeSubject ? undefined: {
-                                    dbsubject_id: subjectId
-                                }
-                            }
+                opl_dbsection: !includeSection ? undefined : {
+                    dbsection_id: sectionId,
+                    opl_dbchapter: !includeChapter ? undefined: {
+                        dbchapter_id: chapterId,
+                        opl_dbsubject: !includeSubject ? undefined: {
+                            dbsubject_id: subjectId
                         }
                     }
                 }
