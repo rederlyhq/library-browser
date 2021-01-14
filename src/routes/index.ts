@@ -23,8 +23,6 @@ const stringArrayToNumberArray= (value: string[]): number[] => value.map(arg => 
 const filterNaN = (arr: number[]) => _.filter(arr, _.negate(_.isNaN));
 
 const getNumberArrayFromQuery = (value: string | string[] | undefined) =>  filterNaN(stringArrayToNumberArray(getQueryParamArray(value)));
-const doesExists = _.negate(_.isNil);
-
 
 router.get('/subjects', async (_req, _res, next) => {
     try {
@@ -80,10 +78,6 @@ router.get('/search', async (req, _res, next) => {
     const chapterId: number | undefined = getNumberArrayFromQuery(req.query.chapterId as string | string[] | undefined)[0];
     const sectionId: number | undefined = getNumberArrayFromQuery(req.query.sectionId as string | string[] | undefined)[0];
 
-    const includeSubject = doesExists(subjectId);
-    const includeChapter = includeSubject || doesExists(chapterId);
-    const includeSection = includeChapter || doesExists(sectionId);
-
     logger.debug(`Params: ${JSON.stringify({
         subjectId,
         chapterId,
@@ -91,21 +85,36 @@ router.get('/search', async (req, _res, next) => {
     })}`);
 
     try {
-        const result = await prisma.opl_pgfile.findMany({
+        const queryResult = await prisma.opl_pgfile.findMany({
             select: {
                 filename: true,
+                opl_dbsection: {
+                    select: {
+                        name: true,
+                        opl_dbchapter: {
+                            select: {
+                                name: true,
+                                opl_dbsubject: {
+                                    select: {
+                                        name: true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                },
                 opl_path: {
                     select: {
-                        path: true
-                    }
-                }
+                        path: true,
+                    },
+                },
             },
             where: {
-                opl_dbsection: !includeSection ? undefined : {
+                opl_dbsection: {
                     dbsection_id: sectionId,
-                    opl_dbchapter: !includeChapter ? undefined: {
+                    opl_dbchapter: {
                         dbchapter_id: chapterId,
-                        opl_dbsubject: !includeSubject ? undefined: {
+                        opl_dbsubject: {
                             dbsubject_id: subjectId
                         }
                     }
@@ -115,11 +124,15 @@ router.get('/search', async (req, _res, next) => {
                 path_id: 'asc'
             }
         });
-        logger.debug(`Includes: ${JSON.stringify({
-            includeSubject,
-            includeChapter,
-            includeSection,
-        })}`);
+
+        const result = queryResult.map((obj => ({
+            filename: obj.filename,
+            path: obj.opl_path.path,
+            sectionName: obj.opl_dbsection.name,
+            chapterName: obj.opl_dbsection.opl_dbchapter.name,
+            subjectName: obj.opl_dbsection.opl_dbchapter.opl_dbsubject.name
+        })));
+
         logger.debug(`Search count: ${result.length}`);
 
         next(httpResponse.Ok(null, {
