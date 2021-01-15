@@ -57,6 +57,7 @@ console.log(`Starting to package project into ${destFile}`);
         recursive: true
     });
     const filesToCopy = [
+        'prisma',
         builtDirectory,
         'package.json',
         'package-lock.json'

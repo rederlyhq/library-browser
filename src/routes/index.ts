@@ -1,4 +1,5 @@
 import * as express from 'express';
+import { Request, Response, NextFunction } from 'express';
 import httpResponse from '../utilities/http-response';
 const router = express.Router();
 import { PrismaClient } from '@prisma/client';
@@ -24,7 +25,7 @@ const filterNaN = (arr: number[]) => _.filter(arr, _.negate(_.isNaN));
 
 const getNumberArrayFromQuery = (value: string | string[] | undefined) =>  filterNaN(stringArrayToNumberArray(getQueryParamArray(value)));
 
-router.get('/subjects', async (_req, _res, next) => {
+router.get('/subjects', async (_req: Request, _res: Response, next: NextFunction) => {
     try {
         const subjects = await prisma.opl_dbsubject.findMany();
         logger.debug(`Subject count: ${subjects.length}`);
@@ -36,7 +37,7 @@ router.get('/subjects', async (_req, _res, next) => {
     }
 });
 
-router.get('/chapters', async (req, _res, next) => {
+router.get('/chapters', async (req: Request, _res: Response, next: NextFunction) => {
     const subjectId: number | undefined = getNumberArrayFromQuery(req.query.subjectId as string | string[] | undefined)[0];
 
     try {
@@ -54,7 +55,7 @@ router.get('/chapters', async (req, _res, next) => {
     }
 });
 
-router.get('/sections', async (req, _res, next) => {
+router.get('/sections', async (req: Request, _res: Response, next: NextFunction) => {
     const chapterId: number | undefined = getNumberArrayFromQuery(req.query.chapterId as string | string[] | undefined)[0];
 
     try {
@@ -73,7 +74,7 @@ router.get('/sections', async (req, _res, next) => {
 });
 
 
-router.get('/search', async (req, _res, next) => {
+router.get('/search', async (req: Request, _res: Response, next: NextFunction) => {
     const subjectId: number | undefined = getNumberArrayFromQuery(req.query.subjectId as string | string[] | undefined)[0];
     const chapterId: number | undefined = getNumberArrayFromQuery(req.query.chapterId as string | string[] | undefined)[0];
     const sectionId: number | undefined = getNumberArrayFromQuery(req.query.sectionId as string | string[] | undefined)[0];

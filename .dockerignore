@@ -1,0 +1,8 @@
+# If we don't include this it will be copied over with docker
+node_modules
+ts-built
+logs
+*.DS_Store
+tmp
+build
+package-outputs

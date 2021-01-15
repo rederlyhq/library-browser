@@ -13,6 +13,7 @@
     "clean": "if [ -d ts-built ]; then rm -r ts-built; fi;",
     "lint": "eslint src/ --ext .ts",
     "build": "npm run clean && tsc",
+    "run:build": "node ts-built/app-scripts/index.js",
     "package": "node ./utility-scripts/package.js",
     "build:package": "npm run build && npm run package"
   },
