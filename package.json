@@ -4,9 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"Error: no test specified\" && exit 0",
     "start": "ts-node src/app-scripts/index.ts",
     "start:debug": "nodemon --inspect=5861 ./src/app-scripts/index.ts",
+    "start:debug:watch": "npm run start:debug",
+    "cli": "ts-node src/app-scripts/cli.ts",
+    "cli:built": "node ts-built/app-scripts/cli.js",
     "clean": "if [ -d ts-built ]; then rm -r ts-built; fi;",
     "lint": "eslint src/ --ext .ts",
     "build": "npm run clean && tsc"
