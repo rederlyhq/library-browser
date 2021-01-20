@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 import * as dotenvExpand from 'dotenv-expand';
 import * as _ from 'lodash';
+import * as crypto from 'crypto';
 dotenv.config();
 dotenvExpand(dotenv.config({ path: './prisma/.env' }));
 import { LoggingLevelType, LOGGING_LEVEL } from './utilities/logger-logging-levels';
@@ -113,6 +114,7 @@ const configurations = {
         isProduction: isProduction,
         logMissingConfigurations: readBooleanValue('LOG_MISSING_CONFIGURATIONS', true),
         failOnMissingConfigurations: readBooleanValue('FAIL_ON_MISSING_CONFIGURATIONS', isProduction),
+        configSalt: readStringValue('CONFIG_SALT', ''),
     },
     server: {
         port: readStringValue('SERVER_PORT', '3004'),
@@ -168,7 +170,14 @@ const configurations = {
             // After we log the warnings we can drop the logs, figured it would cause cleanup
             logs = null;
         });
-    })
+    }),
+    hash: ''
 };
+
+configurations.loadPromise
+.then(() => {
+    configurations.hash = crypto.createHash('sha256').update(JSON.stringify(configurations)).digest('hex');
+})
+.catch(() => null);
 
 export default configurations;

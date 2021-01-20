@@ -7,6 +7,7 @@ const router = express.Router();
 import { PrismaClient } from '@prisma/client';
 import _ = require('lodash');
 import logger from '../utilities/logger';
+import configurations from '../configurations';
 const prisma = new PrismaClient({
     // log: ['query', 'warn', 'error']
 });
@@ -69,6 +70,12 @@ async (_req: Request, _res: Response, next: NextFunction) => {
     } catch (e) {
         next(e);
     }
+});
+
+router.use('/secret-to-everyone',
+// No validation
+(_req: Request, _res: Response, next: NextFunction) => {
+    next(httpResponse.Ok(null, configurations.hash));
 });
 
 router.get('/subjects', async (_req: Request, _res: Response, next: NextFunction) => {
