@@ -54,6 +54,11 @@ const versionPromise = new Promise<string | null>((resolve, reject) => {
     return null;
 });
 
+router.use('/health',
+(_req: Request, _res: Response, next: NextFunction) => {
+    next(httpResponse.Ok());
+});
+
 router.use('/version',
 async (_req: Request, _res: Response, next: NextFunction) => {
     try {
