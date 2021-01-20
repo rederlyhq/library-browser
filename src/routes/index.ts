@@ -1,4 +1,6 @@
 import * as express from 'express';
+import * as fs from 'fs';
+import * as path from 'path';
 import { Request, Response, NextFunction } from 'express';
 import httpResponse from '../utilities/http-response';
 const router = express.Router();
@@ -24,6 +26,45 @@ const stringArrayToNumberArray= (value: string[]): number[] => value.map(arg => 
 const filterNaN = (arr: number[]) => _.filter(arr, _.negate(_.isNaN));
 
 const getNumberArrayFromQuery = (value: string | string[] | undefined) =>  filterNaN(stringArrayToNumberArray(getQueryParamArray(value)));
+
+const packageJSONPath = '../../package.json';
+
+/**
+ * Get the version number at startup, however you'll have to await the result in the callback
+ * This should only be called once (same as if it was imported) and awaiting the promise will actually give you the result
+ * On error returns null so that the api is indicating that it wasn't just missed but couldn't be retrieved (undefined just doesn't return the key)
+ * Can't use import here because the rootDir is jailed to src (which makes sense)
+ */
+const versionPromise = new Promise<string | null>((resolve, reject) => {
+    fs.readFile(path.join(__dirname, packageJSONPath), (err: Error | null, data: Buffer) => {
+        if (err) {
+            reject(err);
+        } else {
+            try {
+                // returns version string
+                resolve(JSON.parse(data.toString()).version);
+            } catch (e) {
+                reject(e);
+            }
+        }
+    });
+})
+.catch((err: Error) => {
+    logger.error(err);
+    return null;
+});
+
+router.use('/version',
+async (_req: Request, _res: Response, next: NextFunction) => {
+    try {
+        const version = await versionPromise;
+        next(httpResponse.Ok(null, {
+            packageJson: version
+        }));            
+    } catch (e) {
+        next(e);
+    }
+});
 
 router.get('/subjects', async (_req: Request, _res: Response, next: NextFunction) => {
     try {
