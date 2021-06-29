@@ -16,6 +16,8 @@ RUN npm install --silent
 
 # This would be a problem if node_modules wasn't docker ignored
 COPY . ./
+# Make sure env file exists for copy
+RUN touch /app/.env
 
 # This would ordinarilly be run with npm install
 # However we don't copy over the schema file so it can't run this
